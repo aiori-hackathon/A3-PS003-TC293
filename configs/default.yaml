@@ -1,0 +1,9 @@
+# Central settings for the whole project. Every phase reads from here,
+# so experiments are documented and reproducible.
+data:
+  raw_file: data/raw/Metro_Interstate_Traffic_Volume.csv
+  processed_dir: data/processed
+  summary_file: results/preprocess_summary.json
+  train_fraction: 0.8        # earlier 80% of the timeline = training
+  window_length: 24          # model sees the previous 24 hours
+  max_gap_fill_hours: 3      # fill only gaps of 3 hours or less (0 = never fill)

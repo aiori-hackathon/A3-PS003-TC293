@@ -1,0 +1,26 @@
+{
+  "raw_rows": 48204,
+  "distinct_hours_present": 40575,
+  "hours_in_full_span": 52551,
+  "missing_hours_before_filling": 11976,
+  "hours_filled_by_interpolation": 2771,
+  "hours_still_missing": 9205,
+  "max_gap_fill_hours": 3,
+  "cutoff_first_test_hour": "2017-10-04 12:00:00",
+  "train_valid_hours": 34676,
+  "test_valid_hours": 8670,
+  "window_length": 24,
+  "train_windows": 32979,
+  "test_windows": 8622,
+  "features_per_window": 28,
+  "train_window_targets_from": "2012-10-03T09:00:00.000000",
+  "train_window_targets_to": "2017-10-04T11:00:00.000000",
+  "test_window_targets_from": "2017-10-05T12:00:00.000000",
+  "test_window_targets_to": "2018-09-30T23:00:00.000000",
+  "scaler_fit_on": "training hours only",
+  "scaler": {
+    "mean": 3300.1796920059983,
+    "std": 1976.2710519572106
+  },
+  "features_used": "previous traffic volumes + hour/day-of-week encodings (weather and holiday columns not used in the MVP)"
+}
