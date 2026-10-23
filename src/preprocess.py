@@ -112,7 +112,7 @@ def inverse_scale(values, scaler: dict):
 def calendar_features(index: pd.DatetimeIndex) -> np.ndarray:
     """Hour-of-day and day-of-week as sin/cos pairs (so 23:00 is near 00:00)."""
     hour = index.hour.to_numpy()
-    day = index.dayofweek.to_numpy()
+    day = index.day_of_week.to_numpy()
     return np.column_stack([
         np.sin(2 * np.pi * hour / 24), np.cos(2 * np.pi * hour / 24),
         np.sin(2 * np.pi * day / 7), np.cos(2 * np.pi * day / 7),
@@ -141,6 +141,15 @@ def build_windows(series: pd.Series, scaler: dict, window_length: int):
 
     X = np.hstack([inputs, calendar_features(target_times)]).astype(np.float32)
     return X, targets.astype(np.float32), target_times.to_numpy()
+
+
+# -------------------------------------------------------- load saved data
+def load_processed(processed_dir: Path):
+    """Load what preprocess.py saved: (dict of arrays, scaler dict)."""
+    data = np.load(processed_dir / "windows.npz")
+    arrays = {key: data[key] for key in data.files}
+    scaler = json.loads((processed_dir / "scaler.json").read_text())
+    return arrays, scaler
 
 
 # --------------------------------------------------------------------- main

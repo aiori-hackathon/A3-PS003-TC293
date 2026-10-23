@@ -1,5 +1,7 @@
 # Central settings for the whole project. Every phase reads from here,
 # so experiments are documented and reproducible.
+seeds: [0, 1, 2]             # every experiment is repeated with these 3 seeds
+
 data:
   raw_file: data/raw/Metro_Interstate_Traffic_Volume.csv
   processed_dir: data/processed
@@ -7,3 +9,13 @@ data:
   train_fraction: 0.8        # earlier 80% of the timeline = training
   window_length: 24          # model sees the previous 24 hours
   max_gap_fill_hours: 3      # fill only gaps of 3 hours or less (0 = never fill)
+
+model:
+  hidden_sizes: [64, 64]     # two hidden layers of 64 units
+
+training:
+  learning_rate: 0.001
+  batch_size: 64
+  # 60 = the same number of passes over the data as the planned federated
+  # budget (30 rounds x 2 local epochs), so the comparison stays fair.
+  centralized_epochs: 60
