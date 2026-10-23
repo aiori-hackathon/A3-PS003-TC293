@@ -10,6 +10,9 @@ data:
   window_length: 24          # model sees the previous 24 hours
   max_gap_fill_hours: 3      # fill only gaps of 3 hours or less (0 = never fill)
 
+clients:
+  num_clients: 4          # simulated intersections (the Non-IID rule needs exactly 4)
+
 model:
   hidden_sizes: [64, 64]     # two hidden layers of 64 units
 

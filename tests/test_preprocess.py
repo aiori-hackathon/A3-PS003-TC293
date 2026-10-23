@@ -30,16 +30,16 @@ def test_short_gap_filled_long_gap_left_empty():
     s = make_series(60)
     s = s.drop(s.index[10:12])     # 2-hour gap  -> should be filled
     s = s.drop(s.index[30:40])     # 10-hour gap -> must stay empty
-    filled, n = pp.fill_short_gaps(s, max_fill_hours=3)
-    assert n == 2
+    filled, mask = pp.fill_short_gaps(s, max_fill_hours=3)
+    assert mask.sum() == 2
     assert filled.isna().sum() == 10
     assert filled.loc["2020-01-01 10:00"] == 10.0   # straight line between 9 and 12
 
 
 def test_zero_max_fill_never_fills():
     s = make_series(30).drop(make_series(30).index[5:7])
-    filled, n = pp.fill_short_gaps(s, max_fill_hours=0)
-    assert n == 0 and filled.isna().sum() == 2
+    filled, mask = pp.fill_short_gaps(s, max_fill_hours=0)
+    assert mask.sum() == 0 and filled.isna().sum() == 2
 
 
 def test_split_is_chronological_and_has_no_overlap():
@@ -92,3 +92,39 @@ def test_test_windows_only_use_test_period():
     assert pd.Timestamp(t_te.min()) >= cutoff
     X_tr, y_tr, t_tr = pp.build_windows(train, scaler, window_length=10)
     assert pd.Timestamp(t_tr.max()) < cutoff
+
+
+def test_filled_mask_marks_exactly_the_estimated_hours():
+    s = make_series(40)
+    s = s.drop(s.index[10:12])
+    filled, mask = pp.fill_short_gaps(s, max_fill_hours=3)
+    assert list(mask[mask].index) == list(make_series(40).index[10:12])
+
+
+def test_windows_skip_estimated_targets_and_the_hour_after_a_filled_gap():
+    s = make_series(50)
+    full_index = s.index
+    s = s.drop(full_index[30:32])                    # 2-hour gap -> hours 30, 31 estimated
+    filled, mask = pp.fill_short_gaps(s, max_fill_hours=3)
+    scaler = {"mean": 0.0, "std": 1.0}
+
+    _, y_all, _ = pp.build_windows(filled, scaler, window_length=10)
+    _, y, times = pp.build_windows(filled, scaler, window_length=10, filled=mask)
+    kept = set(pd.DatetimeIndex(times))
+
+    assert len(y_all) == 40 and len(y) == 37
+    for position in (30, 31, 32):                    # estimated, estimated, first real after
+        assert full_index[position] not in kept
+    for position in (29, 33):                        # neighbours stay
+        assert full_index[position] in kept
+
+
+def test_without_the_leak_rule_a_linear_extrapolation_would_predict_perfectly():
+    """Shows WHY the rule exists: after a filled gap the next real hour is
+    exactly predictable from the filled values (so it must not be a target)."""
+    idx = pd.date_range("2020-01-01", periods=12, freq="h")
+    real = pd.Series([100, 120, 140, 160, 0, 0, 0, 480, 500, 520, 540, 560], index=idx, dtype=float)
+    filled, mask = pp.fill_short_gaps(real.drop(real.index[4:7]), max_fill_hours=3)
+    last_two = filled.iloc[5:7].to_numpy()
+    assert np.isclose(last_two[1] + (last_two[1] - last_two[0]), 480.0)
+    assert mask.iloc[4:7].all() and not mask.iloc[7]

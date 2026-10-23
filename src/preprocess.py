@@ -68,7 +68,10 @@ def fill_short_gaps(series: pd.Series, max_fill_hours: int):
 
     A gap is filled (straight line between neighbours) only if the whole gap
     is <= max_fill_hours long. Longer gaps stay empty (NaN) so we never
-    invent days of traffic.  Returns (series, number_of_hours_filled).
+    invent days of traffic.
+
+    Returns (series, filled_mask). filled_mask is True for every hour whose
+    value is an ESTIMATE, so later steps can avoid treating it as a real reading.
     """
     full_index = pd.date_range(series.index.min(), series.index.max(), freq="h")
     s = series.reindex(full_index)
@@ -80,7 +83,7 @@ def fill_short_gaps(series: pd.Series, max_fill_hours: int):
 
     interpolated = s.interpolate(method="linear", limit_area="inside")
     s = s.where(~fillable, interpolated)
-    return s, int(fillable.sum())
+    return s, fillable
 
 
 # ---------------------------------------------------------------- 4. split
@@ -119,13 +122,20 @@ def calendar_features(index: pd.DatetimeIndex) -> np.ndarray:
     ])
 
 
-def build_windows(series: pd.Series, scaler: dict, window_length: int):
+def build_windows(series: pd.Series, scaler: dict, window_length: int, filled=None):
     """Turn a series into (X, y, target_times).
 
     X row = [previous `window_length` scaled hours] + [4 calendar features of
     the hour being predicted].  y = the scaled traffic of the NEXT hour.
     A window containing any missing hour is skipped, so no example ever
     spans a gap.
+
+    `filled` (optional) marks hours that were ESTIMATED by interpolation.
+    A window is also skipped when
+      * its target is an estimate (not a real observation), or
+      * its target is the first real hour right after an estimate. The
+        straight-line estimate before it already contains that real value,
+        so predicting it would be a leak, not a forecast.
     """
     values = scale(series.to_numpy(dtype=float), scaler)
     if len(values) <= window_length:
@@ -134,6 +144,11 @@ def build_windows(series: pd.Series, scaler: dict, window_length: int):
     # each row: `window_length` inputs followed by 1 target
     windows = sliding_window_view(values, window_length + 1)
     valid = ~np.isnan(windows).any(axis=1)
+    if filled is not None:
+        estimated = np.asarray(filled, dtype=bool)
+        if len(estimated) != len(values):
+            raise ValueError("`filled` must have the same length as the series.")
+        valid &= ~(estimated[window_length:] | estimated[window_length - 1:-1])
 
     inputs = windows[valid, :window_length]
     targets = windows[valid, window_length]
@@ -165,15 +180,20 @@ def main() -> int:
     print("2. Merging duplicate timestamps ...")
     series = one_reading_per_hour(raw)
     print("3. Handling gaps ...")
-    hourly, n_filled = fill_short_gaps(series, cfg["max_gap_fill_hours"])
+    hourly, filled_mask = fill_short_gaps(series, cfg["max_gap_fill_hours"])
+    n_filled = int(filled_mask.sum())
     print("4. Chronological split ...")
     train, test, cutoff = chronological_split(hourly, cfg["train_fraction"])
+    train_filled = filled_mask[filled_mask.index < cutoff]
+    test_filled = filled_mask[filled_mask.index >= cutoff]
     print("5. Fitting scaler on training data only ...")
     scaler = fit_scaler(train)
     print("6. Building windows ...")
     L = cfg["window_length"]
-    X_tr, y_tr, t_tr = build_windows(train, scaler, L)
-    X_te, y_te, t_te = build_windows(test, scaler, L)
+    X_tr, y_tr, t_tr = build_windows(train, scaler, L, train_filled)
+    X_te, y_te, t_te = build_windows(test, scaler, L, test_filled)
+    dropped_tr = len(build_windows(train, scaler, L)[1]) - len(y_tr)
+    dropped_te = len(build_windows(test, scaler, L)[1]) - len(y_te)
 
     out_dir = ROOT / cfg["processed_dir"]
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -193,6 +213,8 @@ def main() -> int:
         "train_valid_hours": int(train.notna().sum()),
         "test_valid_hours": int(test.notna().sum()),
         "window_length": L,
+        "train_windows_excluded_interpolation_leak": int(dropped_tr),
+        "test_windows_excluded_interpolation_leak": int(dropped_te),
         "train_windows": int(len(y_tr)),
         "test_windows": int(len(y_te)),
         "features_per_window": int(X_tr.shape[1]),
