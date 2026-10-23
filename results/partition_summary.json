@@ -1,0 +1,88 @@
+{
+  "seed_used": 0,
+  "num_clients": 4,
+  "summary": {
+    "iid": {
+      "clients": [
+        {
+          "client": 0,
+          "name": "client 0",
+          "n_train": 7081,
+          "share_percent": 25.0,
+          "mean_traffic": 3268.109024215774,
+          "std_traffic": 2005.1002420330015,
+          "n_test_local": 2146
+        },
+        {
+          "client": 1,
+          "name": "client 1",
+          "n_train": 7081,
+          "share_percent": 25.0,
+          "mean_traffic": 3264.643129023091,
+          "std_traffic": 1977.9790298414562,
+          "n_test_local": 2146
+        },
+        {
+          "client": 2,
+          "name": "client 2",
+          "n_train": 7081,
+          "share_percent": 25.0,
+          "mean_traffic": 3229.091935812219,
+          "std_traffic": 1961.0578326777156,
+          "n_test_local": 2146
+        },
+        {
+          "client": 3,
+          "name": "client 3",
+          "n_train": 7081,
+          "share_percent": 25.0,
+          "mean_traffic": 3263.843947737142,
+          "std_traffic": 1993.23273709384,
+          "n_test_local": 2146
+        }
+      ],
+      "spread_of_client_means": 15.860258621434488
+    },
+    "noniid": {
+      "clients": [
+        {
+          "client": 0,
+          "name": "weekday morning (05-12h)",
+          "n_train": 5805,
+          "share_percent": 20.5,
+          "mean_traffic": 4787.735916776964,
+          "std_traffic": 1264.426358067354,
+          "n_test_local": 1788
+        },
+        {
+          "client": 1,
+          "name": "weekday afternoon/evening (12-20h)",
+          "n_train": 6595,
+          "share_percent": 23.3,
+          "mean_traffic": 5043.4294156134,
+          "std_traffic": 991.8838137829663,
+          "n_test_local": 2052
+        },
+        {
+          "client": 2,
+          "name": "weekday night (20-05h)",
+          "n_train": 7728,
+          "share_percent": 27.3,
+          "mean_traffic": 1286.742235355273,
+          "std_traffic": 1024.6224219920314,
+          "n_test_local": 2290
+        },
+        {
+          "client": 3,
+          "name": "weekend (Sat/Sun)",
+          "n_train": 8196,
+          "share_percent": 28.9,
+          "mean_traffic": 2591.10895568707,
+          "std_traffic": 1537.6716637028064,
+          "n_test_local": 2454
+        }
+      ],
+      "spread_of_client_means": 1560.7580826013486
+    }
+  }
+}

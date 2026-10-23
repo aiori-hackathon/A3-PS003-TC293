@@ -1,17 +1,17 @@
 {
   "training_average": {
-    "mae": 1731.719701011817,
-    "rmse": 1977.3818535498715,
+    "mae": 1728.3363011601684,
+    "rmse": 1974.218173666263,
     "description": "always predict the average traffic of the training period"
   },
   "last_hour": {
-    "mae": 586.278589831441,
-    "rmse": 813.8316180171774,
+    "mae": 588.2724838387869,
+    "rmse": 815.5399557207778,
     "description": "predict that next hour equals the previous hour"
   },
   "same_hour_yesterday": {
-    "mae": 567.8463244531204,
-    "rmse": 1026.651662913261,
+    "mae": 569.1590761600517,
+    "rmse": 1028.206424071249,
     "description": "predict that next hour equals the same hour 24 hours earlier"
   }
 }
