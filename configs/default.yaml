@@ -13,6 +13,10 @@ data:
 clients:
   num_clients: 4          # simulated intersections (the Non-IID rule needs exactly 4)
 
+federated:
+  rounds: 30             # communication rounds
+  local_epochs: 2        # epochs each client trains per round (30 x 2 = 60, same budget as centralized)
+
 model:
   hidden_sizes: [64, 64]     # two hidden layers of 64 units
 
