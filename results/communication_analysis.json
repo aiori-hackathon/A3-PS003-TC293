@@ -1,0 +1,33 @@
+{
+  "measured": {
+    "bytes_up_per_round": 104520,
+    "bytes_down_per_round": 103480,
+    "bytes_per_round": 208000,
+    "rounds": 30,
+    "total_bytes": 6240000,
+    "raw_dataset_file_bytes": 3237208,
+    "total_over_raw_file": 1.927586982362579,
+    "break_even_round_vs_raw_file": 15.5635,
+    "bytes_per_client_whole_run": 1560000.0
+  },
+  "assumption_based_scenarios": {
+    "label": "ASSUMPTION, not measured: each intersection would otherwise stream raw video-like data continuously at the stated bit rate",
+    "rows": [
+      {
+        "assumed_stream_mbit_per_s": 0.5,
+        "bytes_per_hour_per_intersection": 225000000.0,
+        "seconds_of_streaming_equal_to_one_clients_whole_federated_run": 24.96
+      },
+      {
+        "assumed_stream_mbit_per_s": 1.0,
+        "bytes_per_hour_per_intersection": 450000000.0,
+        "seconds_of_streaming_equal_to_one_clients_whole_federated_run": 12.48
+      },
+      {
+        "assumed_stream_mbit_per_s": 2.0,
+        "bytes_per_hour_per_intersection": 900000000.0,
+        "seconds_of_streaming_equal_to_one_clients_whole_federated_run": 6.24
+      }
+    ]
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "setting": "local_only_iid",
+  "epochs_per_client": 60,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "summary": {
+    "global_test_mae": {
+      "mean": 167.27415109608964,
+      "std": 4.802447861415002
+    },
+    "global_test_rmse": {
+      "mean": 248.8912943877424,
+      "std": 2.9179752122338494
+    },
+    "local_test_mae": {
+      "mean": 167.98909001117886,
+      "std": 5.066054790754861
+    },
+    "local_test_rmse": {
+      "mean": 249.8884060587665,
+      "std": 3.2416432460168974
+    }
+  },
+  "std_type": "sample standard deviation across seeds",
+  "bytes_sent": 0,
+  "config": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "data": {
+      "raw_file": "data/raw/Metro_Interstate_Traffic_Volume.csv",
+      "processed_dir": "data/processed",
+      "summary_file": "results/preprocess_summary.json",
+      "train_fraction": 0.8,
+      "window_length": 24,
+      "max_gap_fill_hours": 3
+    },
+    "clients": {
+      "num_clients": 4
+    },
+    "federated": {
+      "rounds": 30,
+      "local_epochs": 2
+    },
+    "model": {
+      "hidden_sizes": [
+        64,
+        64
+      ]
+    },
+    "training": {
+      "learning_rate": 0.001,
+      "batch_size": 64,
+      "centralized_epochs": 60
+    }
+  },
+  "per_seed": {
+    "0": [
+      {
+        "client": 0,
+        "name": "client 0",
+        "n_train": 7081,
+        "global_mae": 169.1321008729901,
+        "global_rmse": 248.4816831801925,
+        "local_mae": 170.97150864078608,
+        "local_rmse": 249.7119289292179
+      },
+      {
+        "client": 1,
+        "name": "client 1",
+        "n_train": 7081,
+        "global_mae": 158.2459626700934,
+        "global_rmse": 244.930953524927,
+        "local_mae": 156.83317315574538,
+        "local_rmse": 238.70534504556318
+      },
+      {
+        "client": 2,
+        "name": "client 2",
+        "n_train": 7081,
+        "global_mae": 174.0104921413293,
+        "global_rmse": 248.34942987871156,
+        "local_mae": 171.4562845878568,
+        "local_rmse": 242.73687078123106
+      },
+      {
+        "client": 3,
+        "name": "client 3",
+        "n_train": 7081,
+        "global_mae": 166.6010736232833,
+        "global_rmse": 249.63556033528877,
+        "local_mae": 172.79041423068446,
+        "local_rmse": 264.81196842846776
+      }
+    ],
+    "1": [
+      {
+        "client": 0,
+        "name": "client 0",
+        "n_train": 7081,
+        "global_mae": 167.03903575947203,
+        "global_rmse": 249.81559795351063,
+        "local_mae": 166.55752082771656,
+        "local_rmse": 250.73324927465097
+      },
+      {
+        "client": 1,
+        "name": "client 1",
+        "n_train": 7081,
+        "global_mae": 162.67562310800994,
+        "global_rmse": 249.5935412964875,
+        "local_mae": 167.04007885786626,
+        "local_rmse": 252.86423506881786
+      },
+      {
+        "client": 2,
+        "name": "client 2",
+        "n_train": 7081,
+        "global_mae": 163.3730931884318,
+        "global_rmse": 241.47458585850055,
+        "local_mae": 161.61995142228,
+        "local_rmse": 236.74753140129476
+      },
+      {
+        "client": 3,
+        "name": "client 3",
+        "n_train": 7081,
+        "global_mae": 157.3764846077451,
+        "global_rmse": 245.66536691577235,
+        "local_mae": 156.4272465740344,
+        "local_rmse": 248.41350631135586
+      }
+    ],
+    "2": [
+      {
+        "client": 0,
+        "name": "client 0",
+        "n_train": 7081,
+        "global_mae": 175.0047550829513,
+        "global_rmse": 255.2048718067501,
+        "local_mae": 173.25737975530515,
+        "local_rmse": 255.3696325948748
+      },
+      {
+        "client": 1,
+        "name": "client 1",
+        "n_train": 7081,
+        "global_mae": 167.58766789308225,
+        "global_rmse": 241.97437498641176,
+        "local_mae": 171.58070217822294,
+        "local_rmse": 256.2554409364305
+      },
+      {
+        "client": 2,
+        "name": "client 2",
+        "n_train": 7081,
+        "global_mae": 168.47702332603362,
+        "global_rmse": 251.31760768854497,
+        "local_mae": 164.39094101461887,
+        "local_rmse": 236.30828934129102
+      },
+      {
+        "client": 3,
+        "name": "client 3",
+        "n_train": 7081,
+        "global_mae": 177.7665008796537,
+        "global_rmse": 260.251959227811,
+        "local_mae": 182.94387888902952,
+        "local_rmse": 266.00287459200246
+      }
+    ]
+  }
+}

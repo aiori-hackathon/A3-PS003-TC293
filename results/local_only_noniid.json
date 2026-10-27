@@ -1,0 +1,178 @@
+{
+  "setting": "local_only_noniid",
+  "epochs_per_client": 60,
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "summary": {
+    "global_test_mae": {
+      "mean": 837.8636121146046,
+      "std": 66.03504828491337
+    },
+    "global_test_rmse": {
+      "mean": 1231.2211860283053,
+      "std": 74.11336582277951
+    },
+    "local_test_mae": {
+      "mean": 156.48187918782855,
+      "std": 3.9914483265722036
+    },
+    "local_test_rmse": {
+      "mean": 232.12258930486192,
+      "std": 2.8940284645465035
+    }
+  },
+  "std_type": "sample standard deviation across seeds",
+  "bytes_sent": 0,
+  "config": {
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "data": {
+      "raw_file": "data/raw/Metro_Interstate_Traffic_Volume.csv",
+      "processed_dir": "data/processed",
+      "summary_file": "results/preprocess_summary.json",
+      "train_fraction": 0.8,
+      "window_length": 24,
+      "max_gap_fill_hours": 3
+    },
+    "clients": {
+      "num_clients": 4
+    },
+    "federated": {
+      "rounds": 30,
+      "local_epochs": 2
+    },
+    "model": {
+      "hidden_sizes": [
+        64,
+        64
+      ]
+    },
+    "training": {
+      "learning_rate": 0.001,
+      "batch_size": 64,
+      "centralized_epochs": 60
+    }
+  },
+  "per_seed": {
+    "0": [
+      {
+        "client": 0,
+        "name": "weekday morning (05-12h)",
+        "n_train": 5805,
+        "global_mae": 1171.2156739360587,
+        "global_rmse": 1660.9792696683032,
+        "local_mae": 174.896828433729,
+        "local_rmse": 252.24870558874807
+      },
+      {
+        "client": 1,
+        "name": "weekday afternoon/evening (12-20h)",
+        "n_train": 6595,
+        "global_mae": 706.3619026560912,
+        "global_rmse": 980.0067547758373,
+        "local_mae": 152.96633588979768,
+        "local_rmse": 224.25684838778446
+      },
+      {
+        "client": 2,
+        "name": "weekday night (20-05h)",
+        "n_train": 7728,
+        "global_mae": 921.7141046907857,
+        "global_rmse": 1416.8037883783693,
+        "local_mae": 138.72327963544495,
+        "local_rmse": 216.322585109697
+      },
+      {
+        "client": 3,
+        "name": "weekend (Sat/Sun)",
+        "n_train": 8196,
+        "global_mae": 701.3030659184085,
+        "global_rmse": 1071.7926614426547,
+        "local_mae": 177.24331020879066,
+        "local_rmse": 248.3586287817219
+      }
+    ],
+    "1": [
+      {
+        "client": 0,
+        "name": "weekday morning (05-12h)",
+        "n_train": 5805,
+        "global_mae": 982.767301999314,
+        "global_rmse": 1367.233237387706,
+        "local_mae": 176.0628763022767,
+        "local_rmse": 253.83762106295555
+      },
+      {
+        "client": 1,
+        "name": "weekday afternoon/evening (12-20h)",
+        "n_train": 6595,
+        "global_mae": 478.9937673186247,
+        "global_rmse": 684.5620107654187,
+        "local_mae": 163.6679300972025,
+        "local_rmse": 235.2110707691772
+      },
+      {
+        "client": 2,
+        "name": "weekday night (20-05h)",
+        "n_train": 7728,
+        "global_mae": 1065.1008622171955,
+        "global_rmse": 1672.070886605411,
+        "local_mae": 124.58661788684472,
+        "local_rmse": 212.52725717370825
+      },
+      {
+        "client": 3,
+        "name": "weekend (Sat/Sun)",
+        "n_train": 8196,
+        "global_mae": 519.6142077570637,
+        "global_rmse": 861.0591692819764,
+        "local_mae": 148.84597264045638,
+        "local_rmse": 224.18660059418067
+      }
+    ],
+    "2": [
+      {
+        "client": 0,
+        "name": "weekday morning (05-12h)",
+        "n_train": 5805,
+        "global_mae": 1170.0448226810515,
+        "global_rmse": 1597.6233735360283,
+        "local_mae": 172.8885537208119,
+        "local_rmse": 248.25518170049605
+      },
+      {
+        "client": 1,
+        "name": "weekday afternoon/evening (12-20h)",
+        "n_train": 6595,
+        "global_mae": 615.1603777792176,
+        "global_rmse": 881.5554720323971,
+        "local_mae": 155.96519086349596,
+        "local_rmse": 230.8036567200257
+      },
+      {
+        "client": 2,
+        "name": "weekday night (20-05h)",
+        "n_train": 7728,
+        "global_mae": 1080.227549612321,
+        "global_rmse": 1531.444443157624,
+        "local_mae": 133.0625099602124,
+        "local_rmse": 215.6060778872871
+      },
+      {
+        "client": 3,
+        "name": "weekend (Sat/Sun)",
+        "n_train": 8196,
+        "global_mae": 641.859708809124,
+        "global_rmse": 1049.523165307936,
+        "local_mae": 158.8731446148797,
+        "local_rmse": 223.85683788256122
+      }
+    ]
+  }
+}
