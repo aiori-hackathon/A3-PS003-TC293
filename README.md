@@ -207,8 +207,7 @@ results/, figures/       saved evidence        docs/                presentation
 
 ## 10. Team and acknowledgements
 
-Shaurya and Md Nayab Ahmad (first-year students); mentor Dr Sumit Raj. The team used an AI assistant (Claude)
-as a mentor and code-drafting aid and ran every experiment on its own laptops.
+Shaurya and Md Nayab Ahmad (first-year students); mentor Dr Sumit Raj.
 
 ## References
 
