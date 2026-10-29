@@ -303,7 +303,7 @@ def main() -> int:
     rows = comparison_rows(naive, central, local, fed)
     if rows:
         table = markdown_table(rows)
-        (RESULTS / "comparison_table.md").write_text(table + "\n")
+        (RESULTS / "comparison_table.md").write_text(table + "\n", encoding="utf-8")
         print("\nComparison table (test period, vehicles per hour)\n")
         print(table)
 

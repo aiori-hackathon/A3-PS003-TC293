@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Federated Traffic-Flow Prediction (PS-003) - Demo</title>
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; color: #111; background: #fff; margin: 0; line-height: 1.5; }
+  main { max-width: 960px; margin: 0 auto; padding: 18px 16px 40px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; }
+  h2 { font-size: 1.25rem; border-bottom: 1px solid #999; padding-bottom: 3px; margin-top: 30px; }
+  .sub { color: #444; margin-bottom: 14px; }
+  .notice { border: 1px solid #111; padding: 8px 14px; background: #f6f6f6; }
+  .notice ul { margin: 6px 0 4px 18px; padding: 0; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; margin: 12px 0; }
+  label { display: flex; flex-direction: column; font-size: 0.9rem; }
+  input, select, button { font: inherit; padding: 6px 8px; border: 1px solid #111; background: #fff; }
+  button { cursor: pointer; background: #111; color: #fff; }
+  canvas { width: 100%; height: auto; border: 1px solid #ccc; }
+  .legend span { margin-right: 16px; font-size: 0.9rem; white-space: nowrap; }
+  .sw { display: inline-block; width: 22px; height: 0; border-top: 3px solid; vertical-align: middle; margin-right: 5px; }
+  table { border-collapse: collapse; width: 100%; margin: 8px 0; font-size: 0.92rem; }
+  th, td { border: 1px solid #777; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #eee; }
+  #status { min-height: 1.4em; color: #333; font-style: italic; }
+  .figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 16px; }
+  figure { margin: 0; } figure img { width: 100%; border: 1px solid #ccc; } figcaption { font-size: 0.85rem; color: #333; }
+  footer { margin-top: 30px; font-size: 0.85rem; color: #333; border-top: 1px solid #999; padding-top: 8px; }
+  @media (max-width: 520px) { .figs { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Federated Traffic-Flow Prediction (PS-003)</h1>
+  <div class="sub">Demo: saved historical traffic replayed through models trained with Federated Averaging (FedAvg)</div>
+
+  <div class="notice">
+    <strong>Please read first</strong>
+    <ul>
+      <li>The "intersections" are <strong>simulated</strong>: four slices of one sensor's data (I-94, Minnesota, USA, 2012-2018), not real separate intersections.</li>
+      <li>This page replays <strong>saved historical data</strong> from the test period (5 Oct 2017 - 30 Sep 2018). There is no live feed and nothing is trained here.</li>
+      <li>Federated learning keeps raw data on the clients but is <strong>not full privacy</strong>: model updates can leak information. Secure aggregation and differential privacy are future work.</li>
+    </ul>
+  </div>
+
+  <h2>Try it: forecast one hour ahead</h2>
+  <p>Pick a day in the test period. For every hour, the model sees the previous 24 hours and forecasts the next hour. Black is the real traffic; the colored lines are the two federated models ({{ n_params }} numbers each).</p>
+  <div class="controls">
+    <label>Day (from {{ first_day }} to {{ last_day }})
+      <input type="date" id="date" value="{{ default_day }}" min="{{ first_day }}" max="{{ last_day }}"></label>
+    <label>Show
+      <select id="hours"><option value="24">1 day</option><option value="72">3 days</option><option value="168">7 days</option></select></label>
+    <button id="go" type="button">Show forecast</button>
+  </div>
+  <div class="legend">
+    <span><i class="sw" style="border-color:#000"></i>Actual traffic</span>
+    <span><i class="sw" style="border-color:#1f77b4"></i>FedAvg, IID clients</span>
+    <span><i class="sw" style="border-color:#ff7f0e;border-top-style:dashed"></i>FedAvg, Non-IID clients</span>
+  </div>
+  <canvas id="chart" width="900" height="380"></canvas>
+  <div id="status"></div>
+  <table id="metrics"><thead><tr><th>Model (this selection)</th><th>MAE (vehicles/hour)</th><th>RMSE (vehicles/hour)</th></tr></thead><tbody></tbody></table>
+
+  <h2>Results on the whole test period</h2>
+  <p>Mean &plusmn; standard deviation over 3 random seeds, in vehicles per hour (lower is better).</p>
+  <table>
+    <thead><tr>{% for h in table_header %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in table_rows %}<tr>{% for c in row %}<td>{{ c }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+
+  <h2>Communication cost (measured)</h2>
+  <ul>
+    <li>Each round sends <strong>{{ '{:,}'.format(comm.bytes_per_round) }}</strong> bytes in total ({{ '{:,}'.format(comm.bytes_up_per_round) }} up from the four clients, {{ '{:,}'.format(comm.bytes_down_per_round) }} down).</li>
+    <li>{{ comm.rounds }} rounds send <strong>{{ '{:,}'.format(comm.total_bytes) }}</strong> bytes, which is <strong>{{ '%.2f' % comm.total_over_raw_file }} times</strong> the size of the raw dataset file ({{ '{:,}'.format(comm.raw_dataset_file_bytes) }} bytes).</li>
+    <li>So on this small static dataset federated training does <strong>not</strong> save bandwidth. Its cost is fixed per training campaign, while the cost of sending raw data grows with how much data is streamed (video, for example). It passes the raw file size after about round {{ '%.0f' % comm.break_even_round_vs_raw_file }}.</li>
+    <li><em>{{ scenarios.label }}.</em> {% for r in scenarios.rows %}At {{ r.assumed_stream_mbit_per_s }} Mbit/s, one client's whole federated run equals about {{ '%.0f' % r.seconds_of_streaming_equal_to_one_clients_whole_federated_run }} seconds of streaming{% if not loop.last %}; {% else %}.{% endif %}{% endfor %}</li>
+  </ul>
+
+  {% if figures %}
+  <h2>Figures</h2>
+  <div class="figs">
+    {% for name, caption in figures %}<figure><img src="{{ url_for('static', filename='figures/' + name) }}" alt="{{ caption }}" loading="lazy"><figcaption>{{ caption }}</figcaption></figure>{% endfor %}
+  </div>
+  {% endif %}
+
+  <footer>
+    Data: Hogue, J. (2019). Metro Interstate Traffic Volume. UCI Machine Learning Repository,
+    archive.ics.uci.edu/dataset/492/metro+interstate+traffic+volume. Method: FedAvg (McMahan et al., AISTATS 2017).
+    Project by Shaurya and Md Nayab Ahmad, mentor Dr Sumit Raj, for the AIORI hackathon. This is a simulation, not a deployed traffic system.
+  </footer>
+</main>
+
+<script>
+const COLORS = { actual: '#000000', iid: '#1f77b4', noniid: '#ff7f0e' };
+
+function clearChart() {
+  const c = document.getElementById('chart');
+  c.getContext('2d').clearRect(0, 0, c.width, c.height);
+  document.querySelector('#metrics tbody').innerHTML = '';
+}
+
+function draw(data) {
+  const c = document.getElementById('chart');
+  const ctx = c.getContext('2d');
+  const W = c.width, H = c.height, L = 62, R = 14, T = 16, B = 46;
+  ctx.clearRect(0, 0, W, H);
+  const series = [
+    { v: data.actual, color: COLORS.actual, w: 2.6, dash: [] },
+    { v: data.predictions.iid, color: COLORS.iid, w: 1.8, dash: [] },
+    { v: data.predictions.noniid, color: COLORS.noniid, w: 1.8, dash: [6, 4] }
+  ];
+  let lo = Infinity, hi = -Infinity;
+  series.forEach(s => s.v.forEach(x => { lo = Math.min(lo, x); hi = Math.max(hi, x); }));
+  lo = Math.min(0, lo);
+  hi = hi * 1.05 || 1;
+  const n = data.times.length;
+  const px = i => L + (n === 1 ? (W - L - R) / 2 : i * (W - L - R) / (n - 1));
+  const py = v => T + (H - T - B) * (1 - (v - lo) / (hi - lo));
+
+  ctx.font = '12px sans-serif';
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = '#dddddd';
+  ctx.fillStyle = '#000000';
+  ctx.textAlign = 'right';
+  for (let k = 0; k <= 5; k++) {
+    const v = lo + (hi - lo) * k / 5, y = py(v);
+    ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(W - R, y); ctx.stroke();
+    ctx.fillText(String(Math.round(v)), L - 6, y + 4);
+  }
+  ctx.textAlign = 'center';
+  const step = Math.max(1, Math.ceil(n / 8));
+  for (let i = 0; i < n; i += step) ctx.fillText(data.times[i].slice(5, 16), px(i), H - B + 16);
+  ctx.save();
+  ctx.translate(14, T + (H - T - B) / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('vehicles per hour', 0, 0);
+  ctx.restore();
+
+  series.forEach(s => {
+    ctx.strokeStyle = s.color; ctx.lineWidth = s.w; ctx.setLineDash(s.dash);
+    ctx.beginPath();
+    s.v.forEach((val, i) => { if (i === 0) ctx.moveTo(px(i), py(val)); else ctx.lineTo(px(i), py(val)); });
+    ctx.stroke();
+  });
+  ctx.setLineDash([]);
+}
+
+function fillMetrics(data) {
+  const body = document.querySelector('#metrics tbody');
+  body.innerHTML = '';
+  [['iid', 'FedAvg, IID clients'], ['noniid', 'FedAvg, Non-IID clients']].forEach(([key, label]) => {
+    const tr = document.createElement('tr');
+    [label, data.metrics[key].mae, data.metrics[key].rmse].forEach(text => {
+      const td = document.createElement('td'); td.textContent = String(text); tr.appendChild(td);
+    });
+    body.appendChild(tr);
+  });
+}
+
+async function load() {
+  const date = document.getElementById('date').value;
+  const hours = document.getElementById('hours').value;
+  const status = document.getElementById('status');
+  status.textContent = 'Loading...';
+  try {
+    const response = await fetch('/api/forecast?date=' + encodeURIComponent(date) + '&hours=' + encodeURIComponent(hours));
+    const data = await response.json();
+    if (!response.ok) { status.textContent = data.error || 'Request failed.'; clearChart(); return; }
+    status.textContent = data.note || (data.count + ' hours shown.');
+    draw(data);
+    fillMetrics(data);
+  } catch (error) {
+    status.textContent = 'Could not reach the server.';
+  }
+}
+
+document.getElementById('go').addEventListener('click', load);
+load();
+</script>
+</body>
+</html>
