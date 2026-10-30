@@ -1,12 +1,12 @@
 # Federated Traffic-Flow Prediction (PS-003)
 
 A reproducible simulation of **federated learning** for hourly traffic forecasting. Several simulated
-intersections train a small neural network together; in this simulation only model weights (and an example
-count) travel to a central server, never raw traffic records. Built for the AIORI hackathon (Level 2).
+intersections train a small neural network together; only model weights travel to a central server,
+never raw traffic records. Built for the AIORI hackathon (Level 2).
 
 **Live demo:** `LIVE_DEMO_URL` (to be filled in after deployment).
 Free hosting sleeps when idle, so the first load can take about a minute.
-No internet? Run the demo locally: see [Run the demo](#6-run-the-demo).
+No internet? Run the demo locally: see [Run the demo](#run-the-demo).
 
 > **Read this first.** The "intersections" are *simulated slices of one sensor's data*, not real separate
 > intersections. Federated learning alone is *not* full privacy. On this small dataset federated training
@@ -45,8 +45,6 @@ similar (IID) versus different (Non-IID) clients.
   hourly westbound I-94 traffic near Minneapolis-St Paul, USA, one sensor, 2 Oct 2012 - 30 Sep 2018,
   48,204 rows. <https://archive.ics.uci.edu/dataset/492/metro+interstate+traffic+volume>.
   License: see the UCI page (to be confirmed by the team).
-* **Not India-specific.** This dataset is from the USA. An Indian dataset could be a second case study in
-  future work, but none has been verified or used here.
 * **Target:** `traffic_volume`, vehicles per hour. **Task:** forecast the next hour from the previous 24 hours
   plus hour-of-day and day-of-week.
 * **Cleaning (decided from the data):** duplicate timestamps (5,445, all with identical traffic) are merged;
@@ -102,26 +100,10 @@ How to read it:
 * **IID:** FedAvg matches centralized training (we do not claim it is better; the centralized error moves by
   10-15 between epochs) and is about 11% lower in MAE than local-only training.
 * **Non-IID:** FedAvg's error is about twice the IID value and varies more between seeds, but it is still about 46%
-  below the best simple baseline. Local-only models collapse on the shared test period (worse than the simple
-  baselines) because each saw only one kind of traffic. This gap comes from our extreme partition and should not
-  be generalized.
-* **Client level:** on its own test slice, each Non-IID local specialist beats the shared FedAvg model
-  (MAE, mean over seeds: weekday morning 175 vs 538, afternoon/evening 158 vs 342, night 132 vs 205,
-  weekend 162 vs 197), so the global model is more general but less accurate for each regime. With IID clients
-  FedAvg is better for every client (about 148 vs 168 on average). See the client-level figure below.
-* **Robustness check:** because the error wobbles from epoch to epoch, `src/secondary_check.py` (output:
-  `results/secondary_check.json`) averages the last 10 epochs/rounds instead of the final one:
-
-| Method | Final MAE | Last-10 MAE | Final RMSE | Last-10 RMSE |
-|---|---|---|---|---|
-| Centralized (epochs) | 158.6 +/- 0.8 | 155.1 +/- 0.5 | 232.6 +/- 2.0 | 232.0 +/- 1.0 |
-| FedAvg, IID (rounds) | 148.2 +/- 1.9 | 150.4 +/- 1.7 | 229.0 +/- 1.0 | 230.5 +/- 1.5 |
-| FedAvg, Non-IID (rounds) | 304.8 +/- 10.8 | 313.9 +/- 9.3 | 439.9 +/- 22.4 | 448.1 +/- 18.7 |
-
-  The apparent MAE gap between FedAvg IID and centralized shrinks from about 6% to about 3% and the RMSE
-  values are nearly equal, so we only claim that FedAvg IID **matches** centralized training. FedAvg Non-IID
-  was still improving slowly at round 30; its last-10 MAE is about 45% below the best simple baseline.
-  Differences below roughly 10-15 vehicles/hour should not be treated as meaningful.
+  below the best simple baseline. Local-only models collapse (worse than the simple baselines) because each saw
+  only one kind of traffic. This gap comes from our extreme partition and should not be generalized.
+* A robustness check that averages the last 10 epochs/rounds instead of the final one is in
+  `src/secondary_check.py` (output: `results/secondary_check.json`).
 
 ![Convergence](figures/convergence.png)
 ![All methods](figures/method_comparison.png)
@@ -146,14 +128,12 @@ The demo replays saved **historical** test data through the saved FedAvg models 
 There is no live feed and nothing is trained.
 
 ```
-pip install flask                      # if not already installed
 python deploy\prepare_demo_data.py     # once, from the project root
 python deploy\app.py                   # open http://127.0.0.1:5000
 ```
 
 Hosting (for example Render): root directory `deploy`, build command `pip install -r requirements.txt`,
-start command `gunicorn app:app`. The `deploy` folder contains its own small `requirements.txt`
-(Flask, NumPy, gunicorn; no PyTorch).
+start command `gunicorn app:app`. The folder contains its own small `requirements.txt` (Flask, NumPy, gunicorn).
 
 ## 7. Reproduce everything (Windows PowerShell, from the project root)
 
@@ -175,8 +155,8 @@ python src\secondary_check.py
 python -m pytest tests -v
 ```
 
-Tested on Python 3.14 (Windows); the test suite has 76 tests. Each script prints what it saved. Results and
-figures are committed in `results/` and `figures/`.
+Tested on Python 3.14 (Windows). Each script prints what it saved. Results and figures are committed in
+`results/` and `figures/`.
 
 ## 8. Repository layout
 
@@ -198,12 +178,11 @@ results/, figures/       saved evidence        docs/                presentation
 * One US sensor; clients are simulated; neighbouring examples overlap, so IID clients are not independent.
 * 6.4% of usable hours are interpolated estimates and 17.5% of the full period is missing.
 * The test period is one year at one location; no India-specific data; only an MLP is evaluated.
-* Under the Non-IID split the shared model does not beat local specialists on their own data.
 * Weather, holidays and a stronger seasonal baseline are not included.
 * **Privacy:** model updates can leak information. Secure aggregation and differential privacy are *not*
   implemented (future work). This is a simulation, not a deployment on real roadside hardware.
-* Future work: real multi-intersection data (for example a verified Indian dataset), LSTM, weather features,
-  longer Non-IID training, smaller or quantized messages, secure aggregation.
+* Future work: real multi-intersection data, LSTM, weather features, longer Non-IID training, smaller or
+  quantized messages, secure aggregation.
 
 ## 10. Team and acknowledgements
 
